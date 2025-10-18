@@ -2,9 +2,11 @@
 import { useEffect, useState } from 'react'; 
 import { useRouter } from 'next/navigation';
 
-export default function Dashboard() {
+export default function Dashboard() {/* crea dashboard para usar en otros lados*/
     const [userEmail, setUserEmail] = useState('');
+    /*rea las variables userEmail y setUserEmail que vienen del estado vacío"*/
     const router = useRouter();
+    /*ea la variable router que viene del enrutador de navegación*/
 
     useEffect(() => {
         const email = localStorage.getItem('userEmail');
@@ -15,15 +17,15 @@ export default function Dashboard() {
             return;
         }
         setUserEmail(email);
-    }, [router]);
+    }, [router]);/*"Establece el email del usuario con el valor de email"*/
 
     const handleLogout = () => {
         localStorage.removeItem('userEmail');
         localStorage.removeItem('isAuthenticated');
-        router.push('/');
+        router.push('/');/* ve  a la ruta raiz*/
     };
 
-    if (!userEmail) {
+    if (!userEmail) {/* si no hay un usuario muestra cargando dashboard en toda la pantalla*/
         return (
             <div style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f9ff'}}>
                 <div style={{textAlign: 'center'}}>
@@ -54,7 +56,7 @@ export default function Dashboard() {
                 <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                     <div>
                         <h1 style={{fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937', margin: 0}}>
-                            DentalCare Pro
+                        Clinica denltal especializada
                         </h1>
                         <p style={{color: '#6b7280', margin: '4px 0 0 0'}}>Bienvenido, Dr. {userEmail}</p>
                     </div>

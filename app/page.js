@@ -31,22 +31,22 @@ export default function Login() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-  // 2️⃣ VERIFICAR credenciales
-  if (email === 'admin@admin.com' && password === 'password') {
+  // VERIFICAR credenciales
+  if (email === 'Dr@admin.com' && password === 'password') {
     if (typeof window !== 'undefined') {  // ← ESTA LÍNEA NUEVA
-    // 3️⃣ GUARDAR en memoria (si son correctas)
+    //  GUARDAR en memoria (si son correctas)
     localStorage.setItem('userEmail', email);
     localStorage.setItem('isAuthenticated', 'true');
     }
-    // 4️⃣ REDIRIGIR al dashboard
+    //  REDIRIGIR al dashboard
     router.push('/dashboard');
     
   } else {
-    // 5️⃣ MOSTRAR error (si son incorrectas)
+    //  MOSTRAR error 
     alert('Credenciales incorrectas');
   }
   
-  // 6️⃣ LIMPIAR los campos (opcional)
+  //  LIMPIAR los campos 
   setEmail('');
   setPassword('');
 }
@@ -55,16 +55,26 @@ export default function Login() {
 return (
   <div className={styles.container}>
     <div className={styles.card}>
-      <h2 className={styles.title}>Iniciar Sesión</h2>
+      <h2 className={styles.title}>Clinica Dental Especializada</h2>
       <p className={styles.subtitle}>Ingresa a tu cuenta</p>
+      
       
       <form onSubmit={handleSubmit}>
         <div className={styles.inputGroup}>
           <label className={styles.label}>Email</label>
           <input
             type="email"
+
+            /*Este campo es para emails"*/
             value={email}
+
+            /*"Lo que muestres en pantalla debe ser igual a lo que guarda la variable email"*/
             onChange={(e) => setEmail(e.target.value)}
+           
+           /*Cada vez que el usuario escribe algo en el input, toma exactamente lo que escribió y guárdalo en la variable email"
+
+
+            /*, extrae el valor escrito (e.target.value) y actualiza el estado email con ese valor usando setEmail.*/
             className={styles.input}
             placeholder="admin@admin.com"
             required
@@ -84,8 +94,11 @@ return (
         </div>
 
         <button type="submit" className={styles.button}>
+    
           Iniciar Sesión
         </button>
+
+    
       </form>
     </div>
   </div>
