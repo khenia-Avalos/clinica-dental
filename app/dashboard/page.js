@@ -1,76 +1,64 @@
 'use client';
-import { useEffect, useState } from 'react'; 
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react'; // useState = "Necesito recordar datos del usuario"
+import { useRouter } from 'next/navigation';// useRouter = "Para poder redirigir al usuario"
+import { authService } from '@/services/authService';
 
-export default function Dashboard() {/* crea dashboard para usar en otros lados*/
+export default function Dashboard() {
     const [userEmail, setUserEmail] = useState('');
-    /*rea las variables userEmail y setUserEmail que vienen del estado vacío"*/
+    const [userData, setUserData] = useState(null);// "userData = Donde guardo TODOS los datos del usuario (nombre, teléfono, etc)"
+    const [loading, setLoading] = useState(true); // ✅ Agregado el estado loading que faltaba
     const router = useRouter();
-    /*ea la variable router que viene del enrutador de navegación*/
 
-    useEffect(() => {
-        const email = localStorage.getItem('userEmail');
-        const isAuthenticated = localStorage.getItem('isAuthenticated');
-
-        if (!email || isAuthenticated !== 'true') {
-            router.push('/');
+    useEffect(() => {  // "Cuando el Dashboard se carga, hago esto:"
+        
+        const isAuthenticated = authService.isAuthenticated(); // "Pregunto: ¿El usuario tiene token válido?"
+        const user = authService.getCurrentUser();  // "Recupero los datos del usuario guardados"
+        
+        if (!isAuthenticated || !user) {
+         router.push('/'); // de regreso al login si no
             return;
         }
-        setUserEmail(email);
-    }, [router]);/*"Establece el email del usuario con el valor de email"*/
+        
+        setUserEmail(user.email);
+        setUserData(user);// "Guardo todos los datos del usuario"
+        setLoading(false); // ✅ Desactivar loading cuando todo esté listo
+    }, [router]);/// "Ejecuta esto cada vez que 'router' cambie"
 
     const handleLogout = () => {
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('isAuthenticated');
-        router.push('/');/* ve  a la ruta raiz*/
+        authService.logout(); // Usar el servicio de logout
+        // El servicio ya maneja la redirección
     };
 
-    if (!userEmail) {/* si no hay un usuario muestra cargando dashboard en toda la pantalla*/
+   
+      
+    if (loading) { // ✅ Verificar loading en lugar de userEmail
+        //porque Falla si: El usuario tiene email guardado pero el token expiró.
         return (
-            <div style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f9ff'}}>
-                <div style={{textAlign: 'center'}}>
-                    <div style={{
-                        animation: 'spin 1s linear infinite',
-                        borderRadius: '50%',
-                        height: '80px',
-                        width: '80px',
-                        border: '4px solid #e0f2fe',
-                        borderTop: '4px solid #0d9488'
-                    }}></div>
-                    <p style={{marginTop: '1rem', color: '#6b7280'}}>Cargando dashboard...</p>
+            <div className="min-h-screen bg-blue-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-20 w-20 border-4 border-blue-100 border-t-teal-600"></div>
+                    <p className="mt-4 text-gray-500">Cargando dashboard...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div style={{minHeight: '100vh', backgroundColor: '#f0f9ff', padding: '1rem'}}>
+        <div className="min-h-screen bg-blue-50 p-4">
             {/* Header */}
-            <div style={{
-                backgroundColor: 'white',
-                borderRadius: '12px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                padding: '1.5rem',
-                marginBottom: '1.5rem'
-            }}>
-                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div className="flex justify-between items-center">
                     <div>
-                        <h1 style={{fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937', margin: 0}}>
-                        Clinica denltal especializada
+                        <h1 className="text-2xl font-bold text-gray-800">
+                            Clinica dental especializada
                         </h1>
-                        <p style={{color: '#6b7280', margin: '4px 0 0 0'}}>Bienvenido, Dr. {userEmail}</p>
+                        <p className="text-gray-500 mt-1">
+                            Bienvenido, {userData?.nombre || userEmail}
+                        </p>
                     </div>
                     <button
                         onClick={handleLogout}
-                        style={{
-                            backgroundColor: '#dc2626',
-                            color: 'white',
-                            padding: '0.5rem 1rem',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontWeight: '500',
-                            cursor: 'pointer'
-                        }}
+                        className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium cursor-pointer"
                     >
                         Cerrar Sesión
                     </button>
@@ -78,98 +66,51 @@ export default function Dashboard() {/* crea dashboard para usar en otros lados*
             </div>
 
             {/* Stats Grid */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: '1rem',
-                marginBottom: '1.5rem'
-            }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 {[
-                    { value: '284', label: 'Pacientes', color: '#0d9488' },
-                    { value: '8', label: 'Citas Hoy', color: '#0369a1' },
-                    { value: '$12,450', label: 'Ingresos', color: '#059669' },
-                    { value: '3', label: 'Pendientes', color: '#d97706' }
+                    { value: '284', label: 'Pacientes', color: 'text-teal-600' },
+                    { value: '8', label: 'Citas Hoy', color: 'text-blue-700' },
+                    { value: '$12,450', label: 'Ingresos', color: 'text-green-600' },
+                    { value: '3', label: 'Pendientes', color: 'text-amber-600' }
                 ].map((stat, index) => (
-                    <div key={index} style={{
-                        backgroundColor: 'white',
-                        borderRadius: '12px',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                        padding: '1.5rem',
-                        textAlign: 'center'
-                    }}>
-                        <h3 style={{
-                            fontSize: '1.5rem',
-                            fontWeight: 'bold',
-                            color: stat.color,
-                            margin: '0 0 8px 0'
-                        }}>
+                    <div key={index} className="bg-white rounded-xl shadow-sm p-6 text-center">
+                        <h3 className={`text-2xl font-bold ${stat.color} mb-2`}>
                             {stat.value}
                         </h3>
-                        <p style={{color: '#6b7280', margin: 0}}>{stat.label}</p>
+                        <p className="text-gray-500">{stat.label}</p>
                     </div>
                 ))}
             </div>
 
             {/* Citas */}
-            <div style={{
-                backgroundColor: 'white',
-                borderRadius: '12px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                padding: '1.5rem'
-            }}>
-                <h2 style={{
-                    fontSize: '1.25rem',
-                    fontWeight: '600',
-                    margin: '0 0 1rem 0',
-                    color: '#1f2937'
-                }}>
+            <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">
                     Próximas Citas
                 </h2>
-                <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '12px',
-                        backgroundColor: '#f0f9ff',
-                        borderRadius: '8px'
-                    }}>
+                <div className="flex flex-col gap-3">
+                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                         <div>
                             <strong>María González</strong>
-                            <p style={{margin: '4px 0 0 0', color: '#6b7280'}}>Limpieza dental</p>
+                            <p className="text-gray-500 text-sm mt-1">Limpieza dental</p>
                         </div>
-                        <div style={{textAlign: 'right'}}>
+                        <div className="text-right">
                             <strong>09:00 AM</strong>
-                            <p style={{margin: '4px 0 0 0', color: '#059669'}}>Confirmada</p>
+                            <p className="text-green-600 text-sm mt-1">Confirmada</p>
                         </div>
                     </div>
                     
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '12px',
-                        backgroundColor: '#f0f9ff',
-                        borderRadius: '8px'
-                    }}>
+                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                         <div>
                             <strong>Carlos Rodríguez</strong>
-                            <p style={{margin: '4px 0 0 0', color: '#6b7280'}}>Extracción molar</p>
+                            <p className="text-gray-500 text-sm mt-1">Extracción molar</p>
                         </div>
-                        <div style={{textAlign: 'right'}}>
+                        <div className="text-right">
                             <strong>10:30 AM</strong>
-                            <p style={{margin: '4px 0 0 0', color: '#d97706'}}>Pendiente</p>
+                            <p className="text-amber-600 text-sm mt-1">Pendiente</p>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <style jsx>{`
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            `}</style>
         </div>
     );
 }
